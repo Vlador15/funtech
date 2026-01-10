@@ -1,61 +1,40 @@
-// src/api/authApi.ts
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {createApi} from '@reduxjs/toolkit/query/react';
+import {baseQueryWithAuth} from '@/api/baseQuery';
+import type {
+    AuthResponse,
+    LoginRequest,
+    RegisterRequest,
+    User,
+} from '@/types/auth.types';
 
-// Define User and auth-related response/request types
-export interface User {
-    id: number;
-    email: string;
-    name: string;
-}
-
-export interface AuthResponse {
-    user: User;
-    tokens: {
-        accessToken: string;
-        refreshToken: string;
-    };
-}
-
-export interface RegisterRequest {
-    name: string;
-    email: string;
-    password: string;
-}
-
-export interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-// Create an RTK Query API slice for auth endpoints
 export const authApi = createApi({
     reducerPath: 'authApi',
-    baseQuery: fetchBaseQuery({
-        baseUrl: `/api`,
-        prepareHeaders: (headers) => {
-            headers.set('authorization', localStorage.getItem('accessToken'));
-            return headers;
-        },
-    }),
-    endpoints: ({mutation}) => ({
-        // Registration endpoint (POST /auth/register)
-        register: mutation<AuthResponse, RegisterRequest>({
-            query: (credentials: RegisterRequest) => ({
-                url: 'auth/register',
+    baseQuery: baseQueryWithAuth,
+    endpoints: ({mutation, query}) => ({
+        login: mutation<AuthResponse, LoginRequest>({
+            query: (body) => ({
+                url: '/auth/login',
                 method: 'POST',
-                body: credentials,
+                body,
             }),
         }),
-        // Login endpoint (POST /auth/login)
-        login: mutation<AuthResponse, LoginRequest>({
-            query: (credentials: LoginRequest) => ({
-                url: 'auth/login',
+
+        register: mutation<AuthResponse, RegisterRequest>({
+            query: (body) => ({
+                url: '/auth/register',
                 method: 'POST',
-                body: credentials,
+                body,
             }),
+        }),
+
+        me: query<User, void>({
+            query: () => '/auth/me',
         }),
     }),
 });
 
-// Export hooks for usage in functional components
-export const { useRegisterMutation, useLoginMutation } = authApi;
+export const {
+    useLoginMutation,
+    useRegisterMutation,
+    useMeQuery,
+} = authApi;

@@ -1,11 +1,19 @@
-import React from 'react';
+import {useMeQuery} from './features/auth/authApi';
+import AppRouter from "@/router/AppRouter.tsx";
+import {Box} from "@mui/material";
 
-function App() {
+const App = () => {
+    const hasToken = !!localStorage.getItem('accessToken');
+
+    const {isLoading} = useMeQuery(undefined, {
+        skip: !hasToken,
+    });
+
+    if (isLoading) return null; // или Loader
+
     return (
-        <div>
-            <h1>Welcome to My App</h1>
-        </div>
+        <AppRouter/>
     );
-}
+};
 
 export default App;

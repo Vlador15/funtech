@@ -1,48 +1,58 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { authApi, AuthResponse, User } from './authApi';
+import type { User, Tokens } from '@/types/auth.types';
+import { authApi } from './authApi';
+import type {PayloadAction} from "@reduxjs/toolkit";
+import {createSlice} from "@reduxjs/toolkit";
 
-// Тип состояния аутентификации
 interface AuthState {
     user: User | null;
+    accessToken: string | null;
+    refreshToken: string | null;
     isAuth: boolean;
-    // можно добавить поля: loading, error, tokens в state при необходимости
 }
 
 const initialState: AuthState = {
     user: null,
-    isAuth: false
+    accessToken: localStorage.getItem('accessToken'),
+    refreshToken: localStorage.getItem('refreshToken'),
+    isAuth: false,
 };
 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        // Пример: действие logout для выхода пользователя
         logout: (state) => {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
             state.user = null;
+            state.accessToken = null;
+            state.refreshToken = null;
             state.isAuth = false;
-        }
+
+            localStorage.clear();
+        },
     },
     extraReducers: (builder) => {
-        // Обрабатываем успешную регистрацию через matcher RTK Query
         builder.addMatcher(
-            authApi.endpoints.register.matchFulfilled,
-            (state, action: PayloadAction<AuthResponse>) => {
-                // Срабатывает, когда регистрация прошла успешно (fulfilled)
-                // Сохраняем токены в localStorage
-                localStorage.setItem('accessToken', action.payload.tokens.accessToken);
-                localStorage.setItem('refreshToken', action.payload.tokens.refreshToken);
-                // Обновляем состояние аутентификации
+            authApi.endpoints.login.matchFulfilled,
+            (state: any, action: PayloadAction<{ user: User; tokens: Tokens }>) => {
                 state.user = action.payload.user;
+                state.accessToken = action.payload.tokens.accessToken;
+                state.refreshToken = action.payload.tokens.refreshToken;
+                state.isAuth = true;
+
+                localStorage.setItem('accessToken', state.accessToken);
+                localStorage.setItem('refreshToken', state.refreshToken!);
+            }
+        );
+
+        builder.addMatcher(
+            authApi.endpoints.me.matchFulfilled,
+            (state: any, action: PayloadAction<User>) => {
+                state.user = action.payload;
                 state.isAuth = true;
             }
         );
-        // Можно добавить другие matcher'ы или case reducers для login, logout и т.д.
-    }
+    },
 });
 
-// Экспортируем редюсер и экшены
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;

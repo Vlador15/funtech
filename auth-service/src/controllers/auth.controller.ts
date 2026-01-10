@@ -52,3 +52,12 @@ export const login = (req: Request, res: Response) => {
         });
     })(req, res);
 };
+
+export const me = (req: Request, res: Response) => {
+    const user = req.user as { id: number; username: string };
+
+    return res.json({
+        id: user.id,
+        username: user.username,
+    });
+};
