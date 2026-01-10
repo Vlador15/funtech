@@ -16,7 +16,7 @@ const LinkAnalyticsPage = () => {
 
       <Typography>{link.shortUrl}</Typography>
 
-      {/* сюда графики */}
+      {link && <LinkAnalytics link={link} />}
     </Box>
   );
 };

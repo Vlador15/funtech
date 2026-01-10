@@ -6,7 +6,18 @@ const LinkCard = ({ link }: { link: ShortLink }) => {
   const navigate = useNavigate();
 
   return (
-    <Card sx={{ cursor: 'pointer' }} onClick={() => navigate(`/links/${link.id}`)}>
+    <Card
+      sx={{
+        background: 'rgba(255,255,255,0.03)',
+        transition: '0.2s',
+        cursor: 'pointer',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          background: 'rgba(255,255,255,0.06)',
+        },
+      }}
+      onClick={() => navigate(`/links/${link.id}`)}
+    >
       <CardContent>
         <Typography variant="subtitle1">{link.shortUrl}</Typography>
         <Typography variant="body2" color="text.secondary">
